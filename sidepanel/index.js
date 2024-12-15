@@ -6,24 +6,25 @@ import {
 
 import { GOOGLE_API_KEY } from './config.js';
 
-// Important! Do not expose your API in your extension code
 const apiKey = GOOGLE_API_KEY;
 
+// Initialize global variables
 let genAI = null;
 let model = null;
-let generationConfig = {
-  temperature: 1
+const generationConfig = {
+  temperature: 0.7 // Adjusted for quiz question generation
 };
 
-const inputPrompt = document.body.querySelector('#input-prompt');
-const buttonPrompt = document.body.querySelector('#button-prompt');
-const elementResponse = document.body.querySelector('#response');
-const elementLoading = document.body.querySelector('#loading');
-const elementError = document.body.querySelector('#error');
-const sliderTemperature = document.body.querySelector('#temperature');
-const labelTemperature = document.body.querySelector('#label-temperature');
+// DOM Elements
+const transcriptMessage = document.getElementById('transcript-message');
+const questionContainer = document.getElementById('question-container');
+const questionElement = document.getElementById('question');
+const answersElement = document.getElementById('answers');
+const loadingElement = document.getElementById('loading');
+const errorElement = document.getElementById('error');
 
-function initModel(generationConfig) {
+// Initialize AI model
+function initModel() {
   const safetySettings = [
     {
       category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
@@ -36,173 +37,135 @@ function initModel(generationConfig) {
     safetySettings,
     generationConfig
   });
-  return model;
 }
 
-async function runPrompt(prompt) {
+// Retrieve transcript from the current YouTube video
+async function retrieveTranscript(videoId) {
   try {
+    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`);
+    const body = await response.text();
+
+    const YT_INITIAL_PLAYER_RESPONSE_RE =
+      /ytInitialPlayerResponse\s*=\s*({.+?})\s*;\s*(?:var\s+(?:meta|head)|<\/script|\n)/;
+    const playerResponseMatch = body.match(YT_INITIAL_PLAYER_RESPONSE_RE);
+
+    if (!playerResponseMatch) {
+      throw new Error('Unable to retrieve transcript.');
+    }
+
+    const player = JSON.parse(playerResponseMatch[1]);
+    const tracks = player.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
+    if (!tracks || tracks.length === 0) {
+      throw new Error('No transcripts available for this video.');
+    }
+
+    const transcriptUrl = tracks[0].baseUrl + '&fmt=json3';
+    const transcriptResponse = await fetch(transcriptUrl);
+    const transcriptData = await transcriptResponse.json();
+
+    const transcriptText = transcriptData.events
+      .filter((event) => event.segs)
+      .map((event) =>
+        event.segs.map((seg) => seg.utf8).join('')
+      )
+      .join(' ')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\s+/g, ' ');
+
+    return transcriptText;
+  } catch (error) {
+    console.error('Error retrieving transcript:', error);
+    throw error;
+  }
+}
+
+// Generate a quiz question based on the transcript
+async function generateQuizQuestion(transcript) {
+  try {
+    const prompt = `
+      Based on the following text, create a multiple-choice question with four possible answers (one correct):
+      Text: "${transcript}"
+    `;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
-  } catch (e) {
-    console.log('Prompt failed');
-    console.error(e);
-    console.log('Prompt:', prompt);
-    throw e;
+  } catch (error) {
+    console.error('Error generating quiz question:', error);
+    throw error;
   }
 }
 
-sliderTemperature.addEventListener('input', (event) => {
-  labelTemperature.textContent = event.target.value;
-  generationConfig.temperature = event.target.value;
-});
-
-inputPrompt.addEventListener('input', () => {
-  if (inputPrompt.value.trim()) {
-    buttonPrompt.removeAttribute('disabled');
-  } else {
-    buttonPrompt.setAttribute('disabled', '');
+// Display the quiz question and answers
+function displayQuiz(questionText) {
+  const [question, ...answers] = questionText.split('\n').filter((line) => line.trim());
+  if (answers.length < 4) {
+    throw new Error('Insufficient answers generated.');
   }
-});
 
-buttonPrompt.addEventListener('click', async () => {
-  const prompt = inputPrompt.value.trim();
-  showLoading();
-  try {
-    const generationConfig = {
-      temperature: sliderTemperature.value
-    };
-    initModel(generationConfig);
-    const response = await runPrompt(prompt, generationConfig);
-    showResponse(response);
-  } catch (e) {
-    showError(e);
-  }
-});
+  questionElement.textContent = question;
+  answersElement.innerHTML = ''; // Clear existing answers
 
+  answers.forEach((answer, index) => {
+    const li = document.createElement('li');
+    li.textContent = answer;
+    answersElement.appendChild(li);
+
+    li.addEventListener('click', () => {
+      alert(index === 0 ? 'Correct!' : 'Wrong answer!');
+    });
+  });
+
+  questionContainer.removeAttribute('hidden');
+}
+
+// Main function: Orchestrates transcript retrieval and quiz generation
+async function main() {
+  const queryOptions = { active: true, currentWindow: true };
+
+  chrome.tabs.query(queryOptions, async (tabs) => {
+    const currentTab = tabs[0];
+    if (!currentTab || !currentTab.url) {
+      console.error('No active tab or URL available.');
+      return;
+    }
+
+    try {
+      showLoading();
+      const url = new URL(currentTab.url);
+      const videoId = url.searchParams.get('v');
+
+      if (!videoId) {
+        throw new Error('No video ID found in the URL.');
+      }
+
+      const transcript = await retrieveTranscript(videoId);
+      const quizQuestion = await generateQuizQuestion(transcript);
+      displayQuiz(quizQuestion);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      hideLoading();
+    }
+  });
+}
+
+// Helper functions for UI
 function showLoading() {
-  hide(elementResponse);
-  hide(elementError);
-  show(elementLoading);
+  loadingElement.removeAttribute('hidden');
+  questionContainer.setAttribute('hidden', '');
+  errorElement.setAttribute('hidden', '');
 }
 
-function showResponse(response) {
-  hide(elementLoading);
-  show(elementResponse);
-  // Make sure to preserve line breaks in the response
-  elementResponse.textContent = '';
-  const paragraphs = response.split(/\r?\n/);
-  for (let i = 0; i < paragraphs.length; i++) {
-    const paragraph = paragraphs[i];
-    if (paragraph) {
-      elementResponse.appendChild(document.createTextNode(paragraph));
-    }
-    // Don't add a new line after the final paragraph
-    if (i < paragraphs.length - 1) {
-      elementResponse.appendChild(document.createElement('BR'));
-    }
-  }
+function hideLoading() {
+  loadingElement.setAttribute('hidden', '');
 }
 
-function showError(error) {
-  show(elementError);
-  hide(elementResponse);
-  hide(elementLoading);
-  elementError.textContent = error;
+function showError(message) {
+  errorElement.textContent = message;
+  errorElement.removeAttribute('hidden');
 }
 
-function show(element) {
-  element.removeAttribute('hidden');
-}
-
-function hide(element) {
-  element.setAttribute('hidden', '');
-}
-
-// Check if we're on a YouTube video page and fetch transcripts if available
-let currentUrl; // Variable to store the URL
-let videoId;
-let videoTranscripts;
-
-function retrieveTranscript() {
-    const YT_INITIAL_PLAYER_RESPONSE_RE =
-        /ytInitialPlayerResponse\s*=\s*({.+?})\s*;\s*(?:var\s+(?:meta|head)|<\/script|\n)/;
-    let player = window.ytInitialPlayerResponse;
-    if (!player || videoId !== player.videoDetails.videoId) {
-        fetch('https://www.youtube.com/watch?v=' + videoId)
-            .then(function (response) {
-                return response.text();
-            })
-            .then(function (body) {
-                const playerResponse = body.match(YT_INITIAL_PLAYER_RESPONSE_RE);
-                if (!playerResponse) {
-                    console.warn('Unable to parse playerResponse');
-                    return;
-                }
-                player = JSON.parse(playerResponse[1]);
-                const metadata = {
-                    title: player.videoDetails.title,
-                    duration: player.videoDetails.lengthSeconds,
-                    author: player.videoDetails.author,
-                    views: player.videoDetails.viewCount,
-                };
-                // Get the tracks
-                const tracks = player.captions.playerCaptionsTracklistRenderer.captionTracks;
-
-                // Get the transcript
-                fetch(tracks[0].baseUrl + '&fmt=json3')
-                    .then(function (response) {
-                        return response.json();
-                    })
-                    .then(function (transcript) {
-                        const result = { transcript: transcript, metadata: metadata };
-
-                        const parsedTranscript = transcript.events
-                            // Remove invalid segments
-                            .filter(function (x) {
-                                return x.segs;
-                            })
-                            // Concatenate into single long string
-                            .map(function (x) {
-                                return x.segs
-                                    .map(function (y) {
-                                        return y.utf8;
-                                    })
-                                    .join(' ');
-                            })
-                            .join(' ')
-                            // Remove invalid characters
-                            .replace(/[\u200B-\u200D\uFEFF]/g, '')
-                            // Replace any whitespace with a single space
-                            .replace(/\s+/g, ' ');
-
-                        console.log('Extracted Transcript:', parsedTranscript);
-                        videoTranscripts = parsedTranscript;
-
-                        // Display transcript in the extension UI
-                        const responseDiv = document.getElementById('response');
-                        responseDiv.textContent = `Transcript: ${parsedTranscript}`;
-                        responseDiv.removeAttribute('hidden');
-                    });
-            });
-    }
-}
-
-// Find the videoId of the YouTube video on the current page
-chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    const currentTab = tabs[0]; // Get the active tab
-    if (currentTab && currentTab.url) {
-        currentUrl = currentTab.url; // Save the URL in the variable
-        const urlObj = new URL(currentUrl);
-        videoId = urlObj.searchParams.get('v');
-
-        // Call retrieveTranscript automatically once videoId is set
-        if (videoId) {
-            retrieveTranscript(); // Call the function
-        } else {
-            console.warn("No video ID found in the URL.");
-        }
-    } else {
-        console.log("No active tab found or URL is unavailable.");
-    }
-});
+// Initialize the extension
+initModel();
+main();
