@@ -4,17 +4,12 @@ import {
   HarmCategory
 } from '../node_modules/@google/generative-ai/dist/index.mjs';
 
-// Important! Do not expose your API in your extension code. You have to
-// options:
-//
-// 1. Let users provide their own API key.
-// 2. Manage API keys in your own server and proxy all calls to the Gemini
-// API through your own server, where you can implement additional security
-// measures such as authentification.
-//
-// It is only OK to put your API key into this file if you're the only
-// user of your extension or for testing.
-const apiKey = 'REDACTED';
+// Import and configure dotenv
+import dotenv from '../node_modules/dotenv';
+dotenv.config();
+
+// Important! Do not expose your API in your extension code
+const apiKey = process.env.GOOGLE_API_KEY;
 
 let genAI = null;
 let model = null;
