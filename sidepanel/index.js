@@ -4,8 +4,10 @@ import {
   HarmCategory
 } from '../node_modules/@google/generative-ai/dist/index.mjs';
 
+import { GOOGLE_API_KEY } from './config.js';
+
 // Important! Do not expose your API in your extension code
-const apiKey = 'your_api_key';
+const apiKey = GOOGLE_API_KEY;
 
 let genAI = null;
 let model = null;
