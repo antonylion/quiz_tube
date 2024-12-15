@@ -13,9 +13,9 @@ The extension provides a chat interface for the Gemini API. To learn more about 
    ```sh
    npm install
    ```
-3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and set it in sidepanel/config.js:
+3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and run the following command at the root of your project to create a configuration file and store your API key (replace 'your_api_key' with your actual key):
    ```sh
-   export const GOOGLE_API_KEY = 'your_api_key';
+   echo "export const GOOGLE_API_KEY = 'your_api_key';" > sidepanel/config.js
    ```
 4. Compile the JS bundle for the sidepanel implementation by running:
    ```sh
