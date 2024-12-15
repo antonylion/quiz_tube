@@ -9,11 +9,14 @@ The extension provides a chat interface for the Gemini API. To learn more about 
 ## Running this extension
 
 1. Clone this repository.
-2. Download the Gemini API client by running:
+2. Download the Gemini API client and dotenv by running:
    ```sh
    npm install
    ```
-3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and update [functional-samples/ai.gemini-in-the-cloud/sidepanel/index.js](functional-samples/ai.gemini-in-the-cloud/sidepanel/index.js) (only for testing).
+3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and set it as an environment variable by running:
+   ```sh
+   echo GOOGLE_API_KEY=your_api_key > .env
+   ```
 4. Compile the JS bundle for the sidepanel implementation by running:
    ```sh
    npm run build
