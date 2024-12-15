@@ -4,12 +4,8 @@ import {
   HarmCategory
 } from '../node_modules/@google/generative-ai/dist/index.mjs';
 
-// Import and configure dotenv
-import dotenv from '../node_modules/dotenv';
-dotenv.config();
-
 // Important! Do not expose your API in your extension code
-const apiKey = process.env.GOOGLE_API_KEY;
+const apiKey = 'your_api_key';
 
 let genAI = null;
 let model = null;

@@ -2,15 +2,11 @@
   "name": "Quiz Tube",
   "version": "1.0",
   "scripts": {
-    "build": "rollup --config"
+    "build": "rollup sidepanel/index.js --file dist/sidepanel.bundle.js --format iife"
   },
   "private": true,
   "devDependencies": {
     "@google/generative-ai": "0.15.0",
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
-    "dotenv": "^16.4.7",
     "rollup": "4.22.4"
   }
 }
