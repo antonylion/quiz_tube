@@ -88,7 +88,7 @@ async function retrieveTranscript(videoId) {
 async function generateQuizQuestion(transcript) {
   try {
     const prompt = `
-      Answer directly with the multiple-choice question. Based on the following text, create a multiple-choice question with four possible answers (one correct):
+      Create a direct multiple-choice question with four possible answers (one correct) based on the following text. Do not mention the text, its context, or any references to it. Write only the question and the four possible answers.
       Text: "${transcript}"
     `;
     const result = await model.generateContent(prompt);
