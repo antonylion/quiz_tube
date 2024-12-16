@@ -80,3 +80,51 @@ textarea {
 [hidden] {
   display: none;
 }
+
+.answer-container {
+  border: 2px solid #ccc;
+  border-radius: 50px;
+  padding: 10px 20px;
+  margin: 10px 0;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.answer-container.selected {
+  border-color: #007BFF;
+  background-color: #E0F0FF;
+}
+
+.answer-container.correct {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+.answer-container.wrong {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.confirm-button {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.confirm-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#answers {
+  list-style-type: none; /* The possible answers are not listed with left-side dots */
+  padding: 0; /* Removes extra padding */
+  margin: 0; /* Removes extra margin */
+}

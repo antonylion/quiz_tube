@@ -22,7 +22,7 @@ const questionElement = document.getElementById('question');
 const answersElement = document.getElementById('answers');
 const loadingElement = document.getElementById('loading');
 const errorElement = document.getElementById('error');
-const confirmButton = document.getElementById('confirm-button');
+const confirmButton = document.createElement('button'); // Create confirm button dynamically
 
 // State for user selection
 let selectedAnswerIndex = null;
@@ -107,24 +107,33 @@ function displayQuiz(questionText) {
     throw new Error('Insufficient answers generated.');
   }
 
+  // Display the question
   questionElement.textContent = question;
   answersElement.innerHTML = ''; // Clear existing answers
-  confirmButton.setAttribute('hidden', ''); // Hide confirm button initially
   selectedAnswerIndex = null;
 
+  // Add the "confirm" button if not already added
+  if (!document.body.contains(confirmButton)) {
+    confirmButton.textContent = 'Confirm';
+    confirmButton.setAttribute('id', 'confirm-button');
+    confirmButton.classList.add('confirm-button'); // Add a class for styling
+    confirmButton.addEventListener('click', handleConfirmClick);
+    questionContainer.appendChild(confirmButton); // Append the button to the container
+  }
+
+  // Display the answers
   answers.forEach((answer, index) => {
     const li = document.createElement('li');
     li.textContent = answer;
-    li.classList.add('answer-option'); // Add a class for potential styling
+    li.classList.add('answer-container'); // Add a class for the stadium container style
     answersElement.appendChild(li);
 
     li.addEventListener('click', () => {
       // Remove "selected" class from all answers
-      document.querySelectorAll('.answer-option').forEach((el) => el.classList.remove('selected'));
+      document.querySelectorAll('.answer-container').forEach((el) => el.classList.remove('selected'));
       // Mark the clicked answer as selected
       li.classList.add('selected');
       selectedAnswerIndex = index;
-      confirmButton.removeAttribute('hidden'); // Show confirm button when an answer is selected
     });
   });
 
@@ -132,14 +141,14 @@ function displayQuiz(questionText) {
 }
 
 // Handle the confirm button click
-confirmButton.addEventListener('click', () => {
+function handleConfirmClick() {
   if (selectedAnswerIndex === null) {
     alert('Please select an answer first!');
     return;
   }
 
   // Determine if the selected answer is correct
-  const options = document.querySelectorAll('.answer-option');
+  const options = document.querySelectorAll('.answer-container');
   options.forEach((option, index) => {
     // Highlight the correct answer in green, and incorrect answers in red
     if (index === 0) {
@@ -153,8 +162,8 @@ confirmButton.addEventListener('click', () => {
   options.forEach((option) => {
     option.style.pointerEvents = 'none'; // Prevent further clicks
   });
-  confirmButton.setAttribute('hidden', ''); // Hide the confirm button
-});
+  confirmButton.setAttribute('disabled', ''); // Disable the confirm button
+}
 
 // Main function: Orchestrates transcript retrieval and quiz generation
 async function main() {
