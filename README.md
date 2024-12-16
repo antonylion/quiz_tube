@@ -23,4 +23,4 @@ A Google Chrome extension to test yourself on the YouTube video you are watching
    ```
 5. Load this directory in Chrome as an [unpacked extension](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked).
 6. Navigate to a YouTube video and click the extension icon.
-7. Start test yourself! 🤓
+7. Start testing yourself! 🤓
