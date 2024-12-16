@@ -1,15 +1,15 @@
-# Using the Gemini API in a Chrome Extension.
+# QuizTube
 
-This sample demonstrates how to use the Gemini Cloud API in a Chrome Extension.
+A Google Chrome extension to test yourself on the YouTube video you are watching.
 
-## Overview
+## Sample of the extension
 
-The extension provides a chat interface for the Gemini API. To learn more about the API head over to [https://ai.google.dev/](https://ai.google.dev/).
+![sample](images/sample.png)
 
-## Running this extension
+## Running this extension from source code
 
 1. Clone this repository.
-2. Download the Gemini API client and dotenv by running:
+2. cd into it and run:
    ```sh
    npm install
    ```
@@ -23,4 +23,4 @@ The extension provides a chat interface for the Gemini API. To learn more about 
    ```
 5. Load this directory in Chrome as an [unpacked extension](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked).
 6. Click the extension icon.
-7. Interact with the prompt API in the sidebar.
+7. Start test yourself! 🤓
