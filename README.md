@@ -2,7 +2,7 @@
 
 A Google Chrome extension to test yourself on the YouTube video you are watching.
 
-## Sample of the extension
+## Demo of the extension
 
 ![sample](images/demo.gif)
 
