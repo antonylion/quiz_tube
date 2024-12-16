@@ -4,7 +4,7 @@ A Google Chrome extension to test yourself on the YouTube video you are watching
 
 ## Sample of the extension
 
-![sample](images/sample.png)
+![sample](images/demo.gif)
 
 ## Running this extension from source code
 
