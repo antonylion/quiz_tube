@@ -22,6 +22,10 @@ const questionElement = document.getElementById('question');
 const answersElement = document.getElementById('answers');
 const loadingElement = document.getElementById('loading');
 const errorElement = document.getElementById('error');
+const confirmButton = document.getElementById('confirm-button');
+
+// State for user selection
+let selectedAnswerIndex = null;
 
 // Initialize AI model
 function initModel() {
@@ -105,19 +109,52 @@ function displayQuiz(questionText) {
 
   questionElement.textContent = question;
   answersElement.innerHTML = ''; // Clear existing answers
+  confirmButton.setAttribute('hidden', ''); // Hide confirm button initially
+  selectedAnswerIndex = null;
 
   answers.forEach((answer, index) => {
     const li = document.createElement('li');
     li.textContent = answer;
+    li.classList.add('answer-option'); // Add a class for potential styling
     answersElement.appendChild(li);
 
     li.addEventListener('click', () => {
-      alert(index === 0 ? 'Correct!' : 'Wrong answer!');
+      // Remove "selected" class from all answers
+      document.querySelectorAll('.answer-option').forEach((el) => el.classList.remove('selected'));
+      // Mark the clicked answer as selected
+      li.classList.add('selected');
+      selectedAnswerIndex = index;
+      confirmButton.removeAttribute('hidden'); // Show confirm button when an answer is selected
     });
   });
 
   questionContainer.removeAttribute('hidden');
 }
+
+// Handle the confirm button click
+confirmButton.addEventListener('click', () => {
+  if (selectedAnswerIndex === null) {
+    alert('Please select an answer first!');
+    return;
+  }
+
+  // Determine if the selected answer is correct
+  const options = document.querySelectorAll('.answer-option');
+  options.forEach((option, index) => {
+    // Highlight the correct answer in green, and incorrect answers in red
+    if (index === 0) {
+      option.classList.add('correct'); // The first answer is correct
+    } else if (index === selectedAnswerIndex) {
+      option.classList.add('wrong'); // The selected answer is incorrect
+    }
+  });
+
+  // Disable further interaction
+  options.forEach((option) => {
+    option.style.pointerEvents = 'none'; // Prevent further clicks
+  });
+  confirmButton.setAttribute('hidden', ''); // Hide the confirm button
+});
 
 // Main function: Orchestrates transcript retrieval and quiz generation
 async function main() {

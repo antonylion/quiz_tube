@@ -2,6 +2,26 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="index.css" />
+    <style>
+      /* Quick styling for feedback */
+      .correct {
+        background-color: green;
+        color: white;
+      }
+      .wrong {
+        background-color: red;
+        color: white;
+      }
+      .selected {
+        background-color: lightblue;
+      }
+      #confirm-button {
+        margin-top: 10px;
+        padding: 5px 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <h1>YouTube Quiz Generator</h1>
@@ -11,6 +31,7 @@
       <h2>Quiz</h2>
       <p id="question"></p>
       <ul id="answers"></ul>
+      <button id="confirm-button" hidden>Confirm</button>
     </div>
 
     <div id="error" class="text" hidden></div>
