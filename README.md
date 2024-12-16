@@ -13,7 +13,7 @@ A Google Chrome extension to test yourself on the YouTube video you are watching
    ```sh
    npm install
    ```
-3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and run the following command at the root of your project to create a configuration file and store your API key (replace 'your_api_key' with your actual key):
+3. [Retrieve an API key](https://ai.google.dev/gemini-api/docs/api-key) and run the following command (replace 'your_api_key' with your actual key):
    ```sh
    echo "export const GOOGLE_API_KEY = 'your_api_key';" > sidepanel/config.js
    ```
